@@ -319,6 +319,8 @@ Additional commands for enhanced quality and validation:
 
 For full command details, options, and examples, see the [CLI Reference](https://github.github.io/spec-kit/reference/overview.html).
 
+- **RST + sphinx-needs output (V-model mode)** — opt-in `format = "rst"` produces a complete trace graph with self-validation. See [docs/format-rst.md](docs/format-rst.md).
+
 ## 🧩 Making Spec Kit Your Own: Extensions & Presets
 
 Spec Kit can be tailored to your needs through two complementary systems — **extensions** and **presets** — plus project-local overrides for one-off adjustments:
