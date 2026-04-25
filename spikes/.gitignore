@@ -1,0 +1,5 @@
+# S2 artefacts (local only — not for upstream)
+_venv/
+out-free/
+out-paid/
+_build/

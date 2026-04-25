@@ -1,0 +1,46 @@
+"$schema" = "https://ubcode.useblocks.com/ubproject.schema.json"
+
+# S2 shared-subset audit.
+# Declarative config read identically by free tier (sphinx-needs >= 4.1 via
+# `needs_from_toml`) and paid tier (ubcode native).
+
+[project]
+name = "spec-kit-s2-shared-subset"
+version = "0.1.0"
+
+[sphinx]
+srcdir = "."
+builddir = "_build"
+confdir = "."
+
+[needs]
+id_required = true
+id_regex = "^[A-Z]+_[A-Z][A-Z0-9_]*$"
+build_json = true
+reproducible_json = true
+
+[needs.fields.status]
+schema = { type = "string", enum = ["open", "in_progress", "done"] }
+
+[[needs.types]]
+directive = "req"
+title = "Requirement"
+prefix = "REQ_"
+
+[[needs.types]]
+directive = "spec"
+title = "Specification"
+prefix = "SPEC_"
+
+[[needs.types]]
+directive = "test"
+title = "Test Case"
+prefix = "TC_"
+
+[needs.links.satisfies]
+incoming = "satisfied_by"
+outgoing = "satisfies"
+
+[needs.links.verifies]
+incoming = "verified_by"
+outgoing = "verifies"
