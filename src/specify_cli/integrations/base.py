@@ -215,19 +215,30 @@ class IntegrationBase(ABC):
 
     # -- Primitives — building blocks for setup() -------------------------
 
-    def shared_commands_dir(self) -> Path | None:
+    def shared_commands_dir(self, project_root: Path | None = None) -> Path | None:
         """Return path to the shared command templates directory.
 
-        Checks ``core_pack/commands/`` (wheel install) first, then
-        ``templates/commands/`` (source checkout).  Returns ``None``
+        When *project_root* is provided the project format is resolved via
+        ``get_project_format(project_root)``; format ``"rst"`` selects the
+        ``commands-rst`` subdirectory instead of ``commands``.
+
+        Checks ``core_pack/<subdir>/`` (wheel install) first, then
+        ``templates/<subdir>/`` (source checkout).  Returns ``None``
         if neither exists.
         """
         import inspect
 
+        from specify_cli.project_format import get_project_format
+
+        if project_root is not None and get_project_format(project_root) == "rst":
+            subdir = "commands-rst"
+        else:
+            subdir = "commands"
+
         pkg_dir = Path(inspect.getfile(IntegrationBase)).resolve().parent.parent
         for candidate in [
-            pkg_dir / "core_pack" / "commands",
-            pkg_dir.parent.parent / "templates" / "commands",
+            pkg_dir / "core_pack" / subdir,
+            pkg_dir.parent.parent / "templates" / subdir,
         ]:
             if candidate.is_dir():
                 return candidate
@@ -250,9 +261,9 @@ class IntegrationBase(ABC):
                 return candidate
         return None
 
-    def list_command_templates(self) -> list[Path]:
+    def list_command_templates(self, project_root: Path | None = None) -> list[Path]:
         """Return sorted list of command template files from the shared directory."""
-        cmd_dir = self.shared_commands_dir()
+        cmd_dir = self.shared_commands_dir(project_root)
         if not cmd_dir or not cmd_dir.is_dir():
             return []
         return sorted(f for f in cmd_dir.iterdir() if f.is_file() and f.suffix == ".md")
@@ -1193,7 +1204,11 @@ class YamlIntegration(IntegrationBase):
         parsed_options: dict[str, Any] | None = None,
         **opts: Any,
     ) -> list[Path]:
-        templates = self.list_command_templates()
+        from specify_cli.project_format import get_project_format
+
+        src_subdir = "commands-rst" if get_project_format(project_root) == "rst" else "commands"
+
+        templates = self.list_command_templates(project_root)
         if not templates:
             return []
 
@@ -1240,7 +1255,7 @@ class YamlIntegration(IntegrationBase):
             )
             _, body = self._split_frontmatter(processed)
             yaml_content = self._render_yaml(
-                title, description, body, f"templates/commands/{src_file.name}"
+                title, description, body, f"templates/{src_subdir}/{src_file.name}"
             )
             dst_name = self.command_filename(src_file.stem)
             dst_file = self.write_file_and_record(
@@ -1344,7 +1359,11 @@ class SkillsIntegration(IntegrationBase):
         """
         import yaml
 
-        templates = self.list_command_templates()
+        from specify_cli.project_format import get_project_format
+
+        src_subdir = "commands-rst" if get_project_format(project_root) == "rst" else "commands"
+
+        templates = self.list_command_templates(project_root)
         if not templates:
             return []
 
@@ -1425,7 +1444,7 @@ class SkillsIntegration(IntegrationBase):
                 f"compatibility: {_quote('Requires spec-kit project structure with .specify/ directory')}\n"
                 f"metadata:\n"
                 f"  author: {_quote('github-spec-kit')}\n"
-                f"  source: {_quote('templates/commands/' + src_file.name)}\n"
+                f"  source: {_quote('templates/' + src_subdir + '/' + src_file.name)}\n"
                 f"---\n"
                 f"{processed_body}"
             )

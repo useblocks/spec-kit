@@ -1282,6 +1282,12 @@ def init(
             if ai_skills:
                 integration_parsed_options["skills"] = True
 
+            # When format=rst, write .specify/config.toml + ubproject.toml etc. BEFORE
+            # integration setup so the integration's get_project_format() resolves to "rst"
+            # and slash-command source resolution picks templates/commands-rst/.
+            if fmt == "rst":
+                _bootstrap_rst_project(project_path, force=force)
+
             resolved_integration.setup(
                 project_path, manifest,
                 parsed_options=integration_parsed_options or None,
@@ -1458,9 +1464,6 @@ def init(
                                             pass
                 except Exception as preset_err:
                     console.print(f"[yellow]Warning:[/yellow] Failed to install preset: {preset_err}")
-
-            if fmt == "rst":
-                _bootstrap_rst_project(project_path, force=force)
 
             tracker.complete("final", "project ready")
         except (typer.Exit, SystemExit):
