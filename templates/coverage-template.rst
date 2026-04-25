@@ -1,3 +1,15 @@
+Project Trace Graph
+===================
+
+.. toctree::
+   :maxdepth: 3
+   :glob:
+
+   specs/*/spec
+   specs/*/plan
+   specs/*/tasks
+
+
 Coverage Matrix
 ===============
 

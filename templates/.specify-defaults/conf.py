@@ -11,12 +11,14 @@ source_suffix = {
 
 needs_from_toml = "ubproject.toml"
 
+# Master document: coverage.rst pulls in the per-feature spec/plan/tasks
+# pages via toctree, so sphinx-build resolves the full graph.
+master_doc = "coverage"
+
 html_theme = "alabaster"
 
-# Exclude framework-internal RST so sphinx-needs and ubcode do not parse the
-# unrendered placeholder needs (REQ_PLACEHOLDER_001 etc.) shipped inside the
-# spec-kit templates / extensions / presets directories. Only feature artefacts
-# under specs/<feature>/ should be picked up.
+# Exclude framework-internal RST so neither sphinx-needs nor any HTML
+# build walks the unrendered placeholder needs in templates/.
 exclude_patterns = [
     "_build",
     ".specify",
