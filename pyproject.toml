@@ -32,6 +32,7 @@ packages = ["src/specify_cli"]
 "templates/checklist-template.md" = "specify_cli/core_pack/templates/checklist-template.md"
 "templates/constitution-template.md" = "specify_cli/core_pack/templates/constitution-template.md"
 "templates/plan-template.md" = "specify_cli/core_pack/templates/plan-template.md"
+"templates/plan-template.rst" = "specify_cli/core_pack/templates/plan-template.rst"
 "templates/spec-template.md" = "specify_cli/core_pack/templates/spec-template.md"
 "templates/spec-template.rst" = "specify_cli/core_pack/templates/spec-template.rst"
 "templates/tasks-template.md" = "specify_cli/core_pack/templates/tasks-template.md"
