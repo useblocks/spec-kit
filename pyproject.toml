@@ -36,6 +36,7 @@ packages = ["src/specify_cli"]
 "templates/spec-template.md" = "specify_cli/core_pack/templates/spec-template.md"
 "templates/spec-template.rst" = "specify_cli/core_pack/templates/spec-template.rst"
 "templates/tasks-template.md" = "specify_cli/core_pack/templates/tasks-template.md"
+"templates/tasks-template.rst" = "specify_cli/core_pack/templates/tasks-template.rst"
 "templates/vscode-settings.json" = "specify_cli/core_pack/templates/vscode-settings.json"
 # Command templates
 "templates/commands" = "specify_cli/core_pack/commands"
