@@ -5,8 +5,6 @@ from pathlib import Path
 
 import pytest
 
-pytestmark = pytest.mark.skip(reason="commands-rst directory authored in Task 11")
-
 from specify_cli.presets import PresetResolver
 
 
