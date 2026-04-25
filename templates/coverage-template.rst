@@ -25,7 +25,7 @@ Requirements without verifying tests
 
 .. needtable::
    :types: req
-   :filter: not satisfied_by
+   :filter: not satisfies_back
    :columns: id;title;status;traces_to
 
 
@@ -34,7 +34,7 @@ User stories without acceptance tests
 
 .. needtable::
    :types: user_story
-   :filter: not verified_by
+   :filter: not verifies_back
    :columns: id;title;status
 
 
@@ -52,7 +52,7 @@ Specifications without implementing tasks
 
 .. needtable::
    :types: spec
-   :filter: not implemented_by
+   :filter: not implements_back
    :columns: id;title;status;satisfies
 
 
@@ -61,7 +61,7 @@ Tasks without verifying tests
 
 .. needtable::
    :types: task
-   :filter: not verified_by
+   :filter: not verifies_back
    :columns: id;title;status;implements
 
 
@@ -70,7 +70,7 @@ Risks without mitigation
 
 .. needtable::
    :types: risk
-   :filter: not mitigated_by
+   :filter: not mitigates_back
    :columns: id;title;status;affects
 
 
