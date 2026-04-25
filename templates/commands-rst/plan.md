@@ -46,6 +46,8 @@ Allowed directives/roles: same shared subset as `/speckit.specify`. No rendering
    - `SPEC_X has no incoming verified_by` → missing system test for the SPEC
    - `DEC_X has no :motivates:` → decision orphaned
 
+   **Honest unknowns**: same rule as `/speckit.specify`. If a design question requires user input (build vs buy, sync vs async, hosted vs self-hosted) and you cannot defend a confident decision from the spec or constitution, embed `[NEEDS CLARIFICATION: <question>]` inside the relevant directive body rather than authoring a fabricated SPEC or DEC. The marker is body-text, sphinx-build still passes, and `coverage.rst` will surface the open question for the user.
+
 6. **Update Project Structure** section in plan.rst with the actual chosen layout.
 
 7. **Report completion**: paths to plan.rst, research.rst, data-model.rst, quickstart.rst (whichever were authored), need counts, validation result.

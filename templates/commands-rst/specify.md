@@ -36,6 +36,24 @@ Allowed directives and roles in the spec.rst:
 
 If you find yourself wanting to use `.. needtable::`, `.. needflow::`, or any other rendering directive — those go in `coverage.rst` (auto-rendered), not in `spec.rst`. Keep authored artefacts focused on data; rendering is centralised.
 
+### Handling unknowns: prefer `[NEEDS CLARIFICATION]` over invention
+
+When the user input is silent on a question that requires user judgement (header-row handling, language choice, performance thresholds, API surface contract, default values), **do not invent a SHOULD or MUST clause to close the gap**. Instead, embed the marker inside the directive body:
+
+```rst
+.. req:: Validate the bucket count
+   :id: REQ_FEATURE_BUCKETS_001
+   :status: open
+   :traces_to: US_FEATURE_001
+
+   System MUST reject negative or zero bucket counts.
+   [NEEDS CLARIFICATION: should buckets > 1000 be rejected as well, or accepted with a warning?]
+```
+
+The `sphinx-build -W` self-validation will still pass — the marker lives inside the body, not in a link target. The `coverage.rst` page surfaces every need whose body contains `[NEEDS CLARIFICATION` so the user can answer them in a follow-up `/speckit.clarify` pass.
+
+**Rule of thumb**: if you cannot point at a sentence in the user input that justifies a SHOULD/MUST, keep the question visible. Inventing a closed REQ that traces back to a user story still produces a confident-looking trace graph — and a graph of fabricated requirements is worse than an honest gap.
+
 ## Outline
 
 The text the user typed after `/speckit.specify` is the feature description. Given that description:
@@ -79,7 +97,7 @@ The text the user typed after `/speckit.specify` is the feature description. Giv
 
 8. **Generate Spec Quality Checklist** at `SPECIFY_FEATURE_DIRECTORY/checklists/requirements.rst` using `templates/checklist-template.rst` structure. Validate the spec against it; if items fail, iterate up to 3 times.
 
-9. **Handle [NEEDS CLARIFICATION] markers** the same way as the MD command: extract, present max 3 questions, await user answers, re-fill the directive bodies, re-run sphinx-build self-validation.
+9. **Preserve [NEEDS CLARIFICATION] markers in directive bodies.** Do NOT invent answers to close them. The `coverage.rst` page surfaces these needs in an "Open clarifications" table for the user to resolve via `/speckit.clarify` (interactive) or by editing the directive body directly. Up to 3 markers per spec; if more questions arise, batch the next round in a subsequent run.
 
 10. **Report completion** with:
     - `SPECIFY_FEATURE_DIRECTORY`
@@ -110,8 +128,9 @@ The text the user typed after `/speckit.specify` is the feature description. Giv
 
 ## For AI Generation
 
-- Make informed guesses with industry standards.
-- Document non-obvious assumptions in the Assumptions bullet list.
-- Maximum 3 [NEEDS CLARIFICATION] markers.
+- Make informed guesses with industry standards for *implementation* details (e.g. error message format, log level).
+- For *product* questions the user must answer (header handling, language choice, performance thresholds, public API contract): keep `[NEEDS CLARIFICATION]` markers, do not invent.
+- Document non-obvious assumptions in the Assumptions bullet list — these are claims you'd happily defend in review.
+- Maximum 3 [NEEDS CLARIFICATION] markers per artefact.
 - Every requirement must be testable; if you can't write the acceptance test, the requirement is too vague.
-- Self-validation via sphinx-build is the source of truth — if it passes, the trace graph is structurally sound.
+- Self-validation via sphinx-build is the source of truth for *structural* soundness. It does NOT verify product correctness — open clarifications surface in `coverage.rst` for that.

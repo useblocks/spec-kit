@@ -83,6 +83,15 @@ Decisions without motivated specifications
    :columns: id;title;status
 
 
+Needs with open clarifications
+------------------------------
+
+.. needtable::
+   :types: user_story;req;spec;task;test;risk;decision
+   :filter: "[NEEDS CLARIFICATION" in content
+   :columns: id;type;title;status
+
+
 Full traceability table (all needs)
 -----------------------------------
 

@@ -109,9 +109,29 @@ Sections:
 - Tasks without verifying tests
 - Risks without mitigation
 - Decisions without motivated specifications
+- **Needs with open clarifications** — every directive whose body still contains `[NEEDS CLARIFICATION: ...]`
 - Full traceability table
 
 Open `_build/html/coverage.html` to read.
+
+## Honest unknowns: `[NEEDS CLARIFICATION]`
+
+The slash-command prompts instruct the agent to embed
+`[NEEDS CLARIFICATION: <question>]` inside a directive body whenever the
+input is silent on a product question that requires user judgement (header
+row handling, language choice, performance thresholds, public API contract).
+
+`sphinx-build -W` still passes — the marker lives in body text, not in a
+link target. The "Needs with open clarifications" section in `coverage.rst`
+surfaces every need that still carries one, so the user can resolve them
+in a follow-up `/speckit.clarify` round (or by editing the directive body
+directly).
+
+This trades autonomy for honesty: the V-model trace graph closes, but
+visibly invented requirements are not allowed to dress themselves up as
+confident decisions. If you would prefer the agent to make a guess and
+move on, you can edit the prompt under `.claude/skills/speckit-specify/SKILL.md`
+to soften the rule.
 
 ## Cross-feature reuse with `needimport`
 

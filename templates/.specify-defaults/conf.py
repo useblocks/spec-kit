@@ -19,9 +19,13 @@ html_theme = "alabaster"
 
 # Exclude framework-internal RST so neither sphinx-needs nor any HTML
 # build walks the unrendered placeholder needs in templates/.
+# `specs/*/checklists` carries plain-text process checklists with Markdown
+# checkbox syntax (`* [ ] CHK001`) that docutils does not understand;
+# excluding the directory keeps sphinx-build green.
 exclude_patterns = [
     "_build",
     ".specify",
     ".venv",
     "node_modules",
+    "specs/*/checklists",
 ]

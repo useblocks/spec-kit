@@ -46,6 +46,8 @@ Allowed directives/roles: same shared subset.
    - `SPEC_Y has no incoming implemented_by` → SPEC has no implementing TASK
    Fix and loop max 3 iterations.
 
+   **Honest unknowns**: same rule as `/speckit.specify` and `/speckit.plan`. If a TASK depends on a yet-unmade product or design decision, embed `[NEEDS CLARIFICATION: <question>]` inside the task body. Do not invent a TASK that implements a fabricated SPEC.
+
 6. **Status convention**: every task starts at `:status: open`. The implementer (`/speckit.implement`) flips to `done` either via in-place edit or `.. needextend:: TASK_X\n   :status: done` block at the bottom.
 
 7. **Report**: tasks.rst path, total tasks/tests, validation result.
