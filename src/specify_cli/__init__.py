@@ -934,6 +934,30 @@ SKILL_DESCRIPTIONS = {
 }
 
 
+def _bootstrap_rst_project(project_root: Path, *, force: bool) -> None:
+    """Copy RST-format defaults into the project root and write config.toml.
+
+    Files are NOT overwritten unless ``force`` is True.
+    """
+    core_pack = _locate_core_pack()
+    if core_pack is not None:
+        defaults_dir = core_pack / ".specify-defaults"
+    else:
+        defaults_dir = Path(__file__).parent.parent.parent / "templates" / ".specify-defaults"
+
+    cfg_dir = project_root / ".specify"
+    cfg_dir.mkdir(exist_ok=True)
+    cfg = cfg_dir / "config.toml"
+    if not cfg.exists() or force:
+        cfg.write_text('format = "rst"\n', encoding="utf-8")
+
+    for name in ("ubproject.toml", "conf.py"):
+        src = defaults_dir / name
+        dst = project_root / name
+        if src.exists() and (not dst.exists() or force):
+            dst.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
+
+
 @app.command()
 def init(
     project_name: str = typer.Argument(None, help="Name for your new project directory (optional if using --here, or use '.' for current directory)"),
@@ -950,6 +974,7 @@ def init(
     ai_skills: bool = typer.Option(False, "--ai-skills", help="Install Prompt.MD templates as agent skills (requires --ai)"),
     offline: bool = typer.Option(False, "--offline", help="Deprecated (no-op). All scaffolding now uses bundled assets.", hidden=True),
     preset: str = typer.Option(None, "--preset", help="Install a preset during initialization (by preset ID)"),
+    fmt: str = typer.Option("md", "--format", help="Artefact format: 'md' (default) or 'rst' (sphinx-needs). RST enables ubcode/sphinx-needs consumption."),
     branch_numbering: str = typer.Option(None, "--branch-numbering", help="Branch numbering strategy: 'sequential' (001, 002, …, 1000, … — expands past 999 automatically) or 'timestamp' (YYYYMMDD-HHMMSS)"),
     integration: str = typer.Option(None, "--integration", help="Use the new integration system (e.g. --integration copilot). Mutually exclusive with --ai."),
     integration_options: str = typer.Option(None, "--integration-options", help='Options for the integration (e.g. --integration-options="--commands-dir .myagent/cmds")'),
@@ -997,6 +1022,11 @@ def init(
 
     show_banner()
     ai_deprecation_warning: str | None = None
+
+    fmt = fmt.strip().lower()
+    if fmt not in {"md", "rst"}:
+        console.print(f"[red]Invalid --format:[/red] {fmt}. Must be 'md' or 'rst'.")
+        raise typer.Exit(1)
 
     # Detect when option values are likely misinterpreted flags (parameter ordering issue)
     if ai_assistant and ai_assistant.startswith("--"):
@@ -1428,6 +1458,9 @@ def init(
                                             pass
                 except Exception as preset_err:
                     console.print(f"[yellow]Warning:[/yellow] Failed to install preset: {preset_err}")
+
+            if fmt == "rst":
+                _bootstrap_rst_project(project_path, force=force)
 
             tracker.complete("final", "project ready")
         except (typer.Exit, SystemExit):

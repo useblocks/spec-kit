@@ -191,6 +191,8 @@ clean_branch_name() {
 # Resolve repository root using common.sh functions which prioritize .specify over git
 SCRIPT_DIR="$(CDPATH="" cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common.sh"
+# shellcheck source=./format.sh
+source "$SCRIPT_DIR/format.sh"
 
 REPO_ROOT=$(get_repo_root)
 
@@ -323,7 +325,8 @@ if [ ${#BRANCH_NAME} -gt $MAX_BRANCH_LENGTH ]; then
 fi
 
 FEATURE_DIR="$SPECS_DIR/$BRANCH_NAME"
-SPEC_FILE="$FEATURE_DIR/spec.md"
+SPECKIT_EXT="$(speckit_format_ext "$REPO_ROOT")"
+SPEC_FILE="$FEATURE_DIR/spec.$SPECKIT_EXT"
 
 if [ "$DRY_RUN" != true ]; then
     if [ "$HAS_GIT" = true ]; then

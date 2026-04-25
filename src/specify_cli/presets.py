@@ -28,6 +28,7 @@ from packaging import version as pkg_version
 from packaging.specifiers import SpecifierSet, InvalidSpecifier
 
 from .extensions import ExtensionRegistry, normalize_priority
+from specify_cli.project_format import get_project_format
 
 
 def _substitute_core_template(
@@ -1114,7 +1115,8 @@ class PresetManager:
         from .integrations import get_integration
 
         # Locate core command templates from the project's installed templates
-        core_templates_dir = self.project_root / ".specify" / "templates" / "commands"
+        commands_subdir = "commands-rst" if get_project_format(self.project_root) == "rst" else "commands"
+        core_templates_dir = self.project_root / ".specify" / "templates" / commands_subdir
         init_opts = load_init_options(self.project_root)
         if not isinstance(init_opts, dict):
             init_opts = {}
@@ -2037,6 +2039,9 @@ class PresetResolver:
         self.overrides_dir = self.templates_dir / "overrides"
         self.extensions_dir = project_root / ".specify" / "extensions"
 
+    def _commands_subdir(self) -> str:
+        return "commands-rst" if get_project_format(self.project_root) == "rst" else "commands"
+
     def _get_all_extensions_by_priority(self) -> list[tuple[int, str, dict | None]]:
         """Build unified list of registered and unregistered extensions sorted by priority.
 
@@ -2097,6 +2102,12 @@ class PresetResolver:
 
         Returns:
             Path to the resolved template file, or None if not found
+
+        Note:
+            For non-script types, ``<name>.<project_format>`` (``md`` or
+            ``rst``, via ``get_project_format``) is tried first across the
+            full priority stack. If that yields no match the method falls back
+            to ``.md``. Scripts always use ``.sh`` and skip format negotiation.
         """
         # Determine subdirectory based on template type
         if template_type == "template":
@@ -2108,10 +2119,58 @@ class PresetResolver:
         else:
             subdirs = [""]
 
-        # Determine file extension based on template type
-        ext = ".md"
         if template_type == "script":
-            ext = ".sh"  # scripts use .sh; callers can also check .ps1
+            return self._resolve_with_ext(
+                template_name, template_type, ".sh", skip_presets, subdirs,
+            )
+        preferred = f".{get_project_format(self.project_root)}"
+        hit = self._resolve_with_ext(
+            template_name, template_type, preferred, skip_presets, subdirs,
+        )
+        if hit is not None:
+            return hit
+        if preferred != ".md":
+            # For RST projects: try .md in the RST commands dir first,
+            # then fall back to the MD commands dir as a last resort.
+            hit = self._resolve_with_ext(
+                template_name, template_type, ".md", skip_presets, subdirs,
+            )
+            if hit is not None:
+                return hit
+            return self._resolve_with_ext(
+                template_name, template_type, ".md", skip_presets, subdirs,
+                force_md_commands=True,
+            )
+        return None
+
+    def _resolve_with_ext(
+        self,
+        template_name: str,
+        template_type: str,
+        ext: str,
+        skip_presets: bool,
+        subdirs: list[str],
+        force_md_commands: bool = False,
+    ) -> Optional[Path]:
+        """Resolve a template name to its file path for a specific extension.
+
+        Args:
+            template_name: Template name (e.g., "spec-template")
+            template_type: Template type ("template", "command", or "script")
+            ext: File extension including leading dot (e.g., ".md", ".rst", ".sh")
+            skip_presets: When True, skip tier 2 (installed presets).
+            subdirs: List of subdirectory candidates to search within packs/extensions.
+
+        Returns:
+            Path to the resolved template file, or None if not found
+        """
+        # Determine which commands subdirectory to use for this call
+        if template_type == "command" and force_md_commands:
+            commands_subdir = "commands"
+        elif template_type == "command":
+            commands_subdir = self._commands_subdir()
+        else:
+            commands_subdir = "commands"  # unused for non-command types
 
         # Priority 1: Project-local overrides
         if template_type == "script":
@@ -2149,11 +2208,11 @@ class PresetResolver:
 
         # Priority 4: Core templates
         if template_type == "template":
-            core = self.templates_dir / f"{template_name}.md"
+            core = self.templates_dir / f"{template_name}{ext}"
             if core.exists():
                 return core
         elif template_type == "command":
-            core = self.templates_dir / "commands" / f"{template_name}.md"
+            core = self.templates_dir / commands_subdir / f"{template_name}{ext}"
             if core.exists():
                 return core
         elif template_type == "script":
@@ -2170,26 +2229,26 @@ class PresetResolver:
         if _core_pack is not None:
             # Wheel install path
             if template_type == "template":
-                candidate = _core_pack / "templates" / f"{template_name}.md"
+                candidate = _core_pack / "templates" / f"{template_name}{ext}"
             elif template_type == "command":
-                candidate = _core_pack / "commands" / f"{template_name}.md"
+                candidate = _core_pack / commands_subdir / f"{template_name}{ext}"
             elif template_type == "script":
                 candidate = _core_pack / "scripts" / f"{template_name}{ext}"
             else:
-                candidate = _core_pack / f"{template_name}.md"
+                candidate = _core_pack / f"{template_name}{ext}"
             if candidate.exists():
                 return candidate
         else:
             # Source-checkout / editable install: templates live at repo root
             repo_root = Path(__file__).parent.parent.parent
             if template_type == "template":
-                candidate = repo_root / "templates" / f"{template_name}.md"
+                candidate = repo_root / "templates" / f"{template_name}{ext}"
             elif template_type == "command":
-                candidate = repo_root / "templates" / "commands" / f"{template_name}.md"
+                candidate = repo_root / "templates" / commands_subdir / f"{template_name}{ext}"
             elif template_type == "script":
                 candidate = repo_root / "scripts" / f"{template_name}{ext}"
             else:
-                candidate = repo_root / f"{template_name}.md"
+                candidate = repo_root / f"{template_name}{ext}"
             if candidate.exists():
                 return candidate
 

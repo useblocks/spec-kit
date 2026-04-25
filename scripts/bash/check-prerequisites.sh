@@ -77,11 +77,15 @@ done
 # Source common functions
 SCRIPT_DIR="$(CDPATH="" cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common.sh"
+# shellcheck source=./format.sh
+source "$SCRIPT_DIR/format.sh"
 
 # Get feature paths and validate branch
 _paths_output=$(get_feature_paths) || { echo "ERROR: Failed to resolve feature paths" >&2; exit 1; }
 eval "$_paths_output"
 unset _paths_output
+
+SPECKIT_EXT="$(speckit_format_ext "$REPO_ROOT")"
 check_feature_branch "$CURRENT_BRANCH" "$HAS_GIT" || exit 1
 
 # If paths-only mode, output paths and exit (support JSON + paths-only combined)
@@ -120,14 +124,14 @@ if [[ ! -d "$FEATURE_DIR" ]]; then
 fi
 
 if [[ ! -f "$IMPL_PLAN" ]]; then
-    echo "ERROR: plan.md not found in $FEATURE_DIR" >&2
+    echo "ERROR: plan.$SPECKIT_EXT not found in $FEATURE_DIR" >&2
     echo "Run /speckit.plan first to create the implementation plan." >&2
     exit 1
 fi
 
-# Check for tasks.md if required
+# Check for tasks.$SPECKIT_EXT if required
 if $REQUIRE_TASKS && [[ ! -f "$TASKS" ]]; then
-    echo "ERROR: tasks.md not found in $FEATURE_DIR" >&2
+    echo "ERROR: tasks.$SPECKIT_EXT not found in $FEATURE_DIR" >&2
     echo "Run /speckit.tasks first to create the task list." >&2
     exit 1
 fi
@@ -136,19 +140,19 @@ fi
 docs=()
 
 # Always check these optional docs
-[[ -f "$RESEARCH" ]] && docs+=("research.md")
-[[ -f "$DATA_MODEL" ]] && docs+=("data-model.md")
+[[ -f "$RESEARCH" ]] && docs+=("research.$SPECKIT_EXT")
+[[ -f "$DATA_MODEL" ]] && docs+=("data-model.$SPECKIT_EXT")
 
 # Check contracts directory (only if it exists and has files)
 if [[ -d "$CONTRACTS_DIR" ]] && [[ -n "$(ls -A "$CONTRACTS_DIR" 2>/dev/null)" ]]; then
     docs+=("contracts/")
 fi
 
-[[ -f "$QUICKSTART" ]] && docs+=("quickstart.md")
+[[ -f "$QUICKSTART" ]] && docs+=("quickstart.$SPECKIT_EXT")
 
-# Include tasks.md if requested and it exists
+# Include tasks.$SPECKIT_EXT if requested and it exists
 if $INCLUDE_TASKS && [[ -f "$TASKS" ]]; then
-    docs+=("tasks.md")
+    docs+=("tasks.$SPECKIT_EXT")
 fi
 
 # Output results
@@ -179,12 +183,12 @@ else
     echo "AVAILABLE_DOCS:"
     
     # Show status of each potential document
-    check_file "$RESEARCH" "research.md"
-    check_file "$DATA_MODEL" "data-model.md"
+    check_file "$RESEARCH" "research.$SPECKIT_EXT"
+    check_file "$DATA_MODEL" "data-model.$SPECKIT_EXT"
     check_dir "$CONTRACTS_DIR" "contracts/"
-    check_file "$QUICKSTART" "quickstart.md"
-    
+    check_file "$QUICKSTART" "quickstart.$SPECKIT_EXT"
+
     if $INCLUDE_TASKS; then
-        check_file "$TASKS" "tasks.md"
+        check_file "$TASKS" "tasks.$SPECKIT_EXT"
     fi
 fi
