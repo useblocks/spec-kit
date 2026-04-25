@@ -951,7 +951,7 @@ def _bootstrap_rst_project(project_root: Path, *, force: bool) -> None:
     if not cfg.exists() or force:
         cfg.write_text('format = "rst"\n', encoding="utf-8")
 
-    for name in ("ubproject.toml", "conf.py"):
+    for name in ("ubproject.toml", "conf.py", "coverage.rst"):
         src = defaults_dir / name
         dst = project_root / name
         if src.exists() and (not dst.exists() or force):
