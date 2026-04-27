@@ -1,0 +1,76 @@
+schema_version: "1.0"
+
+preset:
+  id: "useblocks-vmodel"
+  name: "useblocks V-model RST"
+  version: "0.1.0"
+  description: "RST + sphinx-needs V-model output mode. Replaces core spec-kit commands so artefacts emit reStructuredText with full trace links (User Story / Functional Requirement / Architectural Specification / Implementation Task plus Risk and Decision)."
+  author: "useblocks"
+  repository: "https://github.com/useblocks/spec-kit"
+  license: "MIT"
+
+requires:
+  speckit_version: ">=0.8.0"
+
+provides:
+  templates:
+    - type: "command"
+      name: "speckit.specify"
+      file: "commands/speckit.specify.md"
+      description: "Create or update the feature spec in RST with sphinx-needs directives"
+      replaces: "speckit.specify"
+
+    - type: "command"
+      name: "speckit.plan"
+      file: "commands/speckit.plan.md"
+      description: "Author plan.rst with architectural specifications linked to requirements"
+      replaces: "speckit.plan"
+
+    - type: "command"
+      name: "speckit.tasks"
+      file: "commands/speckit.tasks.md"
+      description: "Generate tasks.rst with implementation tasks linked to specs"
+      replaces: "speckit.tasks"
+
+    - type: "command"
+      name: "speckit.implement"
+      file: "commands/speckit.implement.md"
+      description: "Execute the V-model task list while preserving trace links"
+      replaces: "speckit.implement"
+
+    - type: "command"
+      name: "speckit.clarify"
+      file: "commands/speckit.clarify.md"
+      description: "Resolve [NEEDS CLARIFICATION] markers in RST artefacts"
+      replaces: "speckit.clarify"
+
+    - type: "command"
+      name: "speckit.analyze"
+      file: "commands/speckit.analyze.md"
+      description: "Cross-artefact analysis using sphinx-needs trace graph"
+      replaces: "speckit.analyze"
+
+    - type: "command"
+      name: "speckit.checklist"
+      file: "commands/speckit.checklist.md"
+      description: "Generate quality checklists for RST artefacts"
+      replaces: "speckit.checklist"
+
+    - type: "command"
+      name: "speckit.constitution"
+      file: "commands/speckit.constitution.md"
+      description: "Author project constitution as RST principles document"
+      replaces: "speckit.constitution"
+
+    - type: "command"
+      name: "speckit.taskstoissues"
+      file: "commands/speckit.taskstoissues.md"
+      description: "Convert sphinx-needs tasks to GitHub issues with link_to_issue write-back"
+      replaces: "speckit.taskstoissues"
+
+tags:
+  - "rst"
+  - "sphinx-needs"
+  - "v-model"
+  - "traceability"
+  - "useblocks"
