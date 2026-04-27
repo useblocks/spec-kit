@@ -163,7 +163,7 @@ function ConvertTo-CleanBranchName {
 
     return $Name.ToLower() -replace '[^a-z0-9]', '-' -replace '-{2,}', '-' -replace '^-', '' -replace '-$', ''
 }
-# Load common functions (includes Get-RepoRoot, Test-HasGit, Resolve-Template)
+# Load common functions (includes Get-RepoRoot, Test-HasGit, Resolve-Template, Get-SpeckitFormatExt)
 . "$PSScriptRoot/common.ps1"
 
 # Use common.ps1 functions which prioritize .specify over git
@@ -288,7 +288,8 @@ if ($branchName.Length -gt $maxBranchLength) {
 }
 
 $featureDir = Join-Path $specsDir $branchName
-$specFile = Join-Path $featureDir 'spec.md'
+$ext = Get-SpeckitFormatExt -RepoRoot $repoRoot
+$specFile = Join-Path $featureDir "spec.$ext"
 
 if (-not $DryRun) {
     if ($hasGit) {

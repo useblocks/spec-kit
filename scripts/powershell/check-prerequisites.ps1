@@ -53,11 +53,12 @@ EXAMPLES:
     exit 0
 }
 
-# Source common functions
+# Source common functions (common.ps1 dot-sources format.ps1)
 . "$PSScriptRoot/common.ps1"
 
 # Get feature paths and validate branch
 $paths = Get-FeaturePathsEnv
+$ext = Get-SpeckitFormatExt -RepoRoot $paths.REPO_ROOT
 
 if (-not (Test-FeatureBranch -Branch $paths.CURRENT_BRANCH -HasGit:$paths.HAS_GIT)) { 
     exit 1 
@@ -93,14 +94,14 @@ if (-not (Test-Path $paths.FEATURE_DIR -PathType Container)) {
 }
 
 if (-not (Test-Path $paths.IMPL_PLAN -PathType Leaf)) {
-    Write-Output "ERROR: plan.md not found in $($paths.FEATURE_DIR)"
+    Write-Output "ERROR: plan.$ext not found in $($paths.FEATURE_DIR)"
     Write-Output "Run /speckit.plan first to create the implementation plan."
     exit 1
 }
 
-# Check for tasks.md if required
+# Check for tasks.$ext if required
 if ($RequireTasks -and -not (Test-Path $paths.TASKS -PathType Leaf)) {
-    Write-Output "ERROR: tasks.md not found in $($paths.FEATURE_DIR)"
+    Write-Output "ERROR: tasks.$ext not found in $($paths.FEATURE_DIR)"
     Write-Output "Run /speckit.tasks first to create the task list."
     exit 1
 }
@@ -109,19 +110,19 @@ if ($RequireTasks -and -not (Test-Path $paths.TASKS -PathType Leaf)) {
 $docs = @()
 
 # Always check these optional docs
-if (Test-Path $paths.RESEARCH) { $docs += 'research.md' }
-if (Test-Path $paths.DATA_MODEL) { $docs += 'data-model.md' }
+if (Test-Path $paths.RESEARCH) { $docs += "research.$ext" }
+if (Test-Path $paths.DATA_MODEL) { $docs += "data-model.$ext" }
 
 # Check contracts directory (only if it exists and has files)
-if ((Test-Path $paths.CONTRACTS_DIR) -and (Get-ChildItem -Path $paths.CONTRACTS_DIR -ErrorAction SilentlyContinue | Select-Object -First 1)) { 
-    $docs += 'contracts/' 
+if ((Test-Path $paths.CONTRACTS_DIR) -and (Get-ChildItem -Path $paths.CONTRACTS_DIR -ErrorAction SilentlyContinue | Select-Object -First 1)) {
+    $docs += 'contracts/'
 }
 
-if (Test-Path $paths.QUICKSTART) { $docs += 'quickstart.md' }
+if (Test-Path $paths.QUICKSTART) { $docs += "quickstart.$ext" }
 
-# Include tasks.md if requested and it exists
-if ($IncludeTasks -and (Test-Path $paths.TASKS)) { 
-    $docs += 'tasks.md' 
+# Include tasks.$ext if requested and it exists
+if ($IncludeTasks -and (Test-Path $paths.TASKS)) {
+    $docs += "tasks.$ext"
 }
 
 # Output results
@@ -137,12 +138,12 @@ if ($Json) {
     Write-Output "AVAILABLE_DOCS:"
     
     # Show status of each potential document
-    Test-FileExists -Path $paths.RESEARCH -Description 'research.md' | Out-Null
-    Test-FileExists -Path $paths.DATA_MODEL -Description 'data-model.md' | Out-Null
+    Test-FileExists -Path $paths.RESEARCH -Description "research.$ext" | Out-Null
+    Test-FileExists -Path $paths.DATA_MODEL -Description "data-model.$ext" | Out-Null
     Test-DirHasFiles -Path $paths.CONTRACTS_DIR -Description 'contracts/' | Out-Null
-    Test-FileExists -Path $paths.QUICKSTART -Description 'quickstart.md' | Out-Null
-    
+    Test-FileExists -Path $paths.QUICKSTART -Description "quickstart.$ext" | Out-Null
+
     if ($IncludeTasks) {
-        Test-FileExists -Path $paths.TASKS -Description 'tasks.md' | Out-Null
+        Test-FileExists -Path $paths.TASKS -Description "tasks.$ext" | Out-Null
     }
 }

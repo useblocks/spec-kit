@@ -1,6 +1,8 @@
 #!/usr/bin/env pwsh
 # Common PowerShell functions analogous to common.sh
 
+. (Join-Path $PSScriptRoot "format.ps1")
+
 # Find repository root by searching upward for .specify directory
 # This is the primary marker for spec-kit projects
 function Find-SpecifyRoot {
@@ -250,17 +252,19 @@ function Get-FeaturePathsEnv {
         $featureDir = Get-FeatureDirFromBranchPrefixOrExit -RepoRoot $repoRoot -CurrentBranch $currentBranch
     }
     
+    $ext = Get-SpeckitFormatExt -RepoRoot $repoRoot
+
     [PSCustomObject]@{
         REPO_ROOT     = $repoRoot
         CURRENT_BRANCH = $currentBranch
         HAS_GIT       = $hasGit
         FEATURE_DIR   = $featureDir
-        FEATURE_SPEC  = Join-Path $featureDir 'spec.md'
-        IMPL_PLAN     = Join-Path $featureDir 'plan.md'
-        TASKS         = Join-Path $featureDir 'tasks.md'
-        RESEARCH      = Join-Path $featureDir 'research.md'
-        DATA_MODEL    = Join-Path $featureDir 'data-model.md'
-        QUICKSTART    = Join-Path $featureDir 'quickstart.md'
+        FEATURE_SPEC  = Join-Path $featureDir "spec.$ext"
+        IMPL_PLAN     = Join-Path $featureDir "plan.$ext"
+        TASKS         = Join-Path $featureDir "tasks.$ext"
+        RESEARCH      = Join-Path $featureDir "research.$ext"
+        DATA_MODEL    = Join-Path $featureDir "data-model.$ext"
+        QUICKSTART    = Join-Path $featureDir "quickstart.$ext"
         CONTRACTS_DIR = Join-Path $featureDir 'contracts'
     }
 }
@@ -292,6 +296,8 @@ function Test-DirHasFiles {
 #   2. .specify/presets/<preset-id>/templates/ (sorted by priority from .registry)
 #   3. .specify/extensions/<ext-id>/templates/
 #   4. .specify/templates/ (core)
+# Tries the configured format extension first; falls back to md so presets
+# without RST templates continue to work.
 function Resolve-Template {
     param(
         [Parameter(Mandatory=$true)][string]$TemplateName,
@@ -299,58 +305,71 @@ function Resolve-Template {
     )
 
     $base = Join-Path $RepoRoot '.specify/templates'
+    $fmtExt = Get-SpeckitFormatExt -RepoRoot $RepoRoot
 
-    # Priority 1: Project overrides
-    $override = Join-Path $base "overrides/$TemplateName.md"
-    if (Test-Path $override) { return $override }
+    # Helper: try one extension across the full priority stack; return path on hit.
+    function _ResolveWithExt {
+        param([string]$TryExt)
 
-    # Priority 2: Installed presets (sorted by priority from .registry)
-    $presetsDir = Join-Path $RepoRoot '.specify/presets'
-    if (Test-Path $presetsDir) {
-        $registryFile = Join-Path $presetsDir '.registry'
-        $sortedPresets = @()
-        if (Test-Path $registryFile) {
-            try {
-                $registryData = Get-Content $registryFile -Raw | ConvertFrom-Json
-                $presets = $registryData.presets
-                if ($presets) {
-                    $sortedPresets = $presets.PSObject.Properties |
-                        Sort-Object { if ($null -ne $_.Value.priority) { $_.Value.priority } else { 10 } } |
-                        ForEach-Object { $_.Name }
+        # Priority 1: Project overrides
+        $override = Join-Path $base "overrides/$TemplateName.$TryExt"
+        if (Test-Path $override) { return $override }
+
+        # Priority 2: Installed presets (sorted by priority from .registry)
+        $presetsDir = Join-Path $RepoRoot '.specify/presets'
+        if (Test-Path $presetsDir) {
+            $registryFile = Join-Path $presetsDir '.registry'
+            $sortedPresets = @()
+            if (Test-Path $registryFile) {
+                try {
+                    $registryData = Get-Content $registryFile -Raw | ConvertFrom-Json
+                    $presets = $registryData.presets
+                    if ($presets) {
+                        $sortedPresets = $presets.PSObject.Properties |
+                            Sort-Object { if ($null -ne $_.Value.priority) { $_.Value.priority } else { 10 } } |
+                            ForEach-Object { $_.Name }
+                    }
+                } catch {
+                    # Fallback: alphabetical directory order
+                    $sortedPresets = @()
                 }
-            } catch {
+            }
+
+            if ($sortedPresets.Count -gt 0) {
+                foreach ($presetId in $sortedPresets) {
+                    $candidate = Join-Path $presetsDir "$presetId/templates/$TemplateName.$TryExt"
+                    if (Test-Path $candidate) { return $candidate }
+                }
+            } else {
                 # Fallback: alphabetical directory order
-                $sortedPresets = @()
+                foreach ($preset in Get-ChildItem -Path $presetsDir -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -notlike '.*' }) {
+                    $candidate = Join-Path $preset.FullName "templates/$TemplateName.$TryExt"
+                    if (Test-Path $candidate) { return $candidate }
+                }
             }
         }
 
-        if ($sortedPresets.Count -gt 0) {
-            foreach ($presetId in $sortedPresets) {
-                $candidate = Join-Path $presetsDir "$presetId/templates/$TemplateName.md"
+        # Priority 3: Extension-provided templates
+        $extDir = Join-Path $RepoRoot '.specify/extensions'
+        if (Test-Path $extDir) {
+            foreach ($extItem in Get-ChildItem -Path $extDir -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -notlike '.*' } | Sort-Object Name) {
+                $candidate = Join-Path $extItem.FullName "templates/$TemplateName.$TryExt"
                 if (Test-Path $candidate) { return $candidate }
             }
-        } else {
-            # Fallback: alphabetical directory order
-            foreach ($preset in Get-ChildItem -Path $presetsDir -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -notlike '.*' }) {
-                $candidate = Join-Path $preset.FullName "templates/$TemplateName.md"
-                if (Test-Path $candidate) { return $candidate }
-            }
         }
+
+        # Priority 4: Core templates
+        $core = Join-Path $base "$TemplateName.$TryExt"
+        if (Test-Path $core) { return $core }
+
+        return $null
     }
 
-    # Priority 3: Extension-provided templates
-    $extDir = Join-Path $RepoRoot '.specify/extensions'
-    if (Test-Path $extDir) {
-        foreach ($ext in Get-ChildItem -Path $extDir -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -notlike '.*' } | Sort-Object Name) {
-            $candidate = Join-Path $ext.FullName "templates/$TemplateName.md"
-            if (Test-Path $candidate) { return $candidate }
-        }
+    # Try requested format first; fall back to md so presets without RST still work.
+    if ($fmtExt -ne 'md') {
+        $hit = _ResolveWithExt -TryExt $fmtExt
+        if ($hit) { return $hit }
     }
-
-    # Priority 4: Core templates
-    $core = Join-Path $base "$TemplateName.md"
-    if (Test-Path $core) { return $core }
-
-    return $null
+    return _ResolveWithExt -TryExt 'md'
 }
 
