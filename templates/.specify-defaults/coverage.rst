@@ -98,3 +98,17 @@ Full traceability table (all needs)
 .. needtable::
    :types: user_story;req;spec;task;test;risk;decision
    :columns: id;type;title;status;outgoing;incoming
+
+
+Trace graph (visual)
+--------------------
+
+The diagram below renders the same trace graph visually. It needs a
+diagram engine (Graphviz or PlantUML) at HTML build time; if neither is
+available, sphinx-needs emits a warning and the table above remains
+authoritative.
+
+.. needflow::
+   :types: user_story;req;spec;task;test;risk;decision
+   :show_link_names:
+   :align: center

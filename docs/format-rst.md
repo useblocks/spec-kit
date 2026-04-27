@@ -111,6 +111,7 @@ Sections:
 - Decisions without motivated specifications
 - **Needs with open clarifications** — every directive whose body still contains `[NEEDS CLARIFICATION: ...]`
 - Full traceability table
+- **Trace graph (visual)** — `.. needflow::` rendering of the full graph; requires Graphviz or PlantUML at HTML build time and is silently skipped (with a warning) if neither is installed.
 
 Open `_build/html/coverage.html` to read.
 
