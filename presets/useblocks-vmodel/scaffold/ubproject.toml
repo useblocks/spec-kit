@@ -1,0 +1,89 @@
+"$schema" = "https://ubcode.useblocks.com/ubproject.schema.json"
+
+[project]
+name = "speckit-project"
+version = "0.1.0"
+
+[sphinx]
+srcdir = "."
+builddir = "_build"
+confdir = "."
+
+[source]
+# Skip the framework's own placeholder templates under .specify/templates/
+# (and any sibling helper directories) so they are not parsed as project
+# needs. ubcode's default exclude list already covers .git, .venv, _build,
+# node_modules and similar — we only need to add the spec-kit-internal dirs.
+extend_exclude = [".specify"]
+
+[needs]
+id_required = true
+id_regex = "^[A-Z]+_[A-Z][A-Z0-9_]*$"
+build_json = true
+reproducible_json = true
+
+[needs.fields.status]
+schema = { type = "string", enum = ["open", "in_progress", "done"] }
+
+[[needs.types]]
+directive = "req"
+title = "Requirement"
+prefix = "REQ_"
+
+[[needs.types]]
+directive = "spec"
+title = "Specification"
+prefix = "SPEC_"
+
+[[needs.types]]
+directive = "test"
+title = "Test Case"
+prefix = "TC_"
+
+[[needs.types]]
+directive = "task"
+title = "Task"
+prefix = "TASK_"
+
+[[needs.types]]
+directive = "user_story"
+title = "User Story"
+prefix = "US_"
+
+[[needs.types]]
+directive = "risk"
+title = "Risk"
+prefix = "RISK_"
+
+[[needs.types]]
+directive = "decision"
+title = "Decision"
+prefix = "DEC_"
+
+[needs.links.satisfies]
+incoming = "satisfied_by"
+outgoing = "satisfies"
+
+[needs.links.verifies]
+incoming = "verified_by"
+outgoing = "verifies"
+
+[needs.links.implements]
+incoming = "implemented_by"
+outgoing = "implements"
+
+[needs.links.traces_to]
+incoming = "traces_from"
+outgoing = "traces_to"
+
+[needs.links.affects]
+incoming = "affected_by"
+outgoing = "affects"
+
+[needs.links.motivates]
+incoming = "motivated_by"
+outgoing = "motivates"
+
+[needs.links.mitigates]
+incoming = "mitigated_by"
+outgoing = "mitigates"
