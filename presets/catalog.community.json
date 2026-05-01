@@ -480,6 +480,35 @@
         "documentation"
       ]
     },
+    "useblocks-vmodel": {
+      "name": "useblocks V-model RST",
+      "id": "useblocks-vmodel",
+      "version": "0.1.1",
+      "description": "RST + sphinx-needs V-model output mode. Replaces core spec-kit commands so artefacts emit reStructuredText with full trace links (User Story / Functional Requirement / Architectural Specification / Implementation Task plus Risk and Decision).",
+      "author": "useblocks",
+      "repository": "https://github.com/useblocks/spec-kit-preset-useblocks-vmodel",
+      "download_url": "https://github.com/useblocks/spec-kit-preset-useblocks-vmodel/archive/refs/tags/v0.1.1.zip",
+      "homepage": "https://github.com/useblocks/spec-kit-preset-useblocks-vmodel",
+      "documentation": "https://github.com/useblocks/spec-kit-preset-useblocks-vmodel/blob/main/README.md",
+      "license": "MIT",
+      "requires": {
+        "speckit_version": ">=0.8.0"
+      },
+      "provides": {
+        "templates": 6,
+        "commands": 9,
+        "scripts": 1
+      },
+      "tags": [
+        "rst",
+        "sphinx-needs",
+        "v-model",
+        "traceability",
+        "useblocks"
+      ],
+      "created_at": "2026-05-01T00:00:00Z",
+      "updated_at": "2026-05-01T00:00:00Z"
+    },
     "vscode-ask-questions": {
       "name": "VS Code Ask Questions",
       "id": "vscode-ask-questions",
